@@ -1,15 +1,20 @@
+%define		subver	2015-07-24
+%define		ver		%(echo %{subver} | tr -d -)
 %define		plugin		meta
+%define		php_min_version 5.3.0
+%include	/usr/lib/rpm/macros.php
 Summary:	Dokuwiki Plugin to Set Metadata
 Name:		dokuwiki-plugin-%{plugin}
-Version:	20060415
+Version:	%{ver}
 Release:	1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://www.chimeric.de/_src/plugin-meta.tgz
-# Source0-md5:	81f428efcce5b0193bf0be51c8919e1c
-URL:		http://www.dokuwiki.org/plugin:meta
+Source0:	https://github.com/dokufreaks/plugin-meta/archive/8752219/%{plugin}-%{subver}.tar.gz
+# Source0-md5:	c335f4ffd1ca022948955093a4d84dea
+URL:		https://www.dokuwiki.org/plugin:meta
 BuildRequires:	rpmbuild(macros) >= 1.520
 Requires:	dokuwiki >= 20061106
+Requires:	php(core) >= %{php_min_version}
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -26,9 +31,13 @@ as the author of a blog entry.
 
 %prep
 %setup -qc
-mv %{plugin}/* .
+mv *-%{plugin}-*/* .
 
-version=$(awk -F"'" '/date/&&/=>/{print $4}' syntax.php)
+# nothing to do with tests
+%{__rm} -r _test
+
+%build
+version=$(awk '/^date/{print $2}' plugin.info.txt)
 if [ "$(echo "$version" | tr -d -)" != %{version} ]; then
 	: %%{version} mismatch
 	exit 1
@@ -46,3 +55,4 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %dir %{plugindir}
 %{plugindir}/*.php
+%{plugindir}/*.txt
